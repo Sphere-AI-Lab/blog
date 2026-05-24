@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Blog — SphereLab</title>
+  <meta name="description" content="Notes from the SphereLab — research blog from the Scalable Principles for Learning and Reasoning Lab at CUHK." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,300;1,6..72,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #f5efe2;            /* pale sand */
+      --bg-deep:   #efe7d6;            /* slightly deeper sand for hairlines */
+      --ink:       #1c1a16;            /* warm near-black */
+      --ink-soft:  #3b362d;
+      --muted:     #7a7163;            /* warm grey-brown */
+      --line:      rgba(28, 26, 22, 0.10);
+      --hair:      rgba(28, 26, 22, 0.18);
+
+      --serif:     "Newsreader", "Source Serif 4", "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, "Times New Roman", serif;
+      --sans:      "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      --mono:      ui-monospace, "SF Mono", Menlo, "Cascadia Mono", Consolas, monospace;
+
+      --maxw:      1080px;
+      --maxw-wide: 1240px;
+      --pad:       clamp(22px, 5vw, 48px);
+    }
+
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--serif);
+      font-size: 18px;
+      line-height: 1.6;
+      font-weight: 400;
+      font-feature-settings: "ss01", "kern";
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+    ::selection { background: var(--ink); color: var(--bg); }
+
+    a {
+      color: var(--ink);
+      text-decoration: none;
+      border-bottom: 1px solid var(--hair);
+      transition: border-color .25s ease, color .25s ease, opacity .25s ease;
+    }
+    a:hover { border-bottom-color: var(--ink); }
+
+    /* ---------- Subtle paper grain ---------- */
+    body::before {
+      content: "";
+      position: fixed; inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(circle at 1px 1px, rgba(28,26,22,0.022) 1px, transparent 0);
+      background-size: 3px 3px;
+      mix-blend-mode: multiply;
+      z-index: 1;
+    }
+    .layer { position: relative; z-index: 2; }
+
+    /* ---------- Layout primitives ---------- */
+    main { padding-top: 0; }
+    section {
+      padding: clamp(56px, 8vw, 96px) var(--pad);
+    }
+    .col      { max-width: var(--maxw);      margin: 0 auto; }
+    .col-narrow { max-width: 760px; margin: 0 auto; }
+    .col-wide { max-width: var(--maxw-wide); margin: 0 auto; }
+    .center   { text-align: center; }
+
+    .eyebrow {
+      font-family: var(--sans);
+      font-style: normal;
+      font-weight: 400;
+      font-size: 12.5px;
+      color: var(--muted);
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      margin-bottom: 28px;
+    }
+
+    h1, h2, h3 {
+      font-family: var(--serif);
+      font-weight: 400;
+      letter-spacing: -0.018em;
+      color: var(--ink);
+      margin: 0;
+    }
+    p { margin: 0 0 1.1em 0; color: var(--ink-soft); }
+
+    /* ---------- Top nav strip (mirrors the lab's serif identity) ---------- */
+    .topbar {
+      position: relative;
+      z-index: 5;
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 26px var(--pad) 0;
+      max-width: 1280px;
+      margin: 0 auto;
+      flex-wrap: wrap;
+    }
+    .topbar .brand {
+      font-family: var(--serif);
+      font-size: 18px;
+      font-weight: 400;
+      letter-spacing: -0.012em;
+      color: var(--ink);
+      border-bottom: none;
+    }
+    .topbar .brand em { font-style: italic; font-weight: 300; color: var(--muted); }
+    .topbar nav {
+      display: flex;
+      gap: 22px;
+      font-family: var(--sans);
+      font-size: 13.5px;
+      letter-spacing: 0.04em;
+    }
+    .topbar nav a {
+      color: var(--ink-soft);
+      border-bottom: none;
+      transition: color .2s ease;
+    }
+    .topbar nav a:hover { color: var(--ink); }
+    .topbar nav a.current { color: var(--ink); }
+    .topbar nav a.current::after {
+      content: "";
+      display: block;
+      height: 1px;
+      background: var(--ink);
+      opacity: 0.6;
+      margin-top: 3px;
+    }
+
+    /* ---------- Hero / page head ---------- */
+    .page-head {
+      position: relative;
+      padding: clamp(120px, 22vh, 200px) var(--pad) clamp(40px, 6vw, 64px);
+      text-align: center;
+    }
+    .page-head .eyebrow { margin-bottom: 22px; }
+    .page-head h1 {
+      font-size: clamp(48px, 7vw, 88px);
+      line-height: 1.04;
+      letter-spacing: -0.028em;
+      font-weight: 400;
+      margin-bottom: 22px;
+    }
+    .page-head h1 em {
+      font-style: italic;
+      font-weight: 300;
+      color: var(--muted);
+    }
+    .page-head .lede {
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 300;
+      color: var(--ink-soft);
+      font-size: clamp(17px, 1.4vw, 19.5px);
+      line-height: 1.6;
+      max-width: 56ch;
+      margin: 0 auto;
+    }
+
+    .hairline {
+      width: 1px;
+      height: 32px;
+      background: var(--hair);
+      margin: 0 auto;
+      opacity: 0.6;
+    }
+
+    /* ---------- Sphere visual (fixed background, lighter so foreground reads cleanly) ---------- */
+    .sphere-wrap {
+      position: fixed;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1;
+      width: min(900px, 96vw);
+      aspect-ratio: 1 / 1;
+      pointer-events: none;
+      /* Lighter base opacity so text in front stays the dominant visual layer. */
+      opacity: 0.42;
+      will-change: opacity;
+      transition: opacity .25s linear;
+    }
+    .sphere-wrap canvas { width: 100% !important; height: 100% !important; display: block; }
+    @media (prefers-reduced-motion: reduce) {
+      .sphere-wrap { opacity: 0.32; }
+    }
+
+    /* Soft radial wash behind the headline so the page title sits cleanly
+       over the sphere lines without darkening the rest of the page. */
+    .page-head::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background: radial-gradient(
+        ellipse at 50% 42%,
+        color-mix(in srgb, var(--bg) 78%, transparent) 0%,
+        color-mix(in srgb, var(--bg) 55%, transparent) 35%,
+        transparent 70%
+      );
+      z-index: 0;
+    }
+    .page-head > * { position: relative; z-index: 1; }
+
+    /* ---------- Post list (Thinking Machines-style rows) ---------- */
+    .posts {
+      padding: clamp(8px, 2vw, 16px) var(--pad) clamp(72px, 9vw, 120px);
+    }
+    .posts .col-narrow { position: relative; }
+
+    .post-group {
+      border-top: 1px solid var(--hair);
+      margin-top: 4px;
+    }
+    .post-group ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+    .post-group li {
+      position: relative;
+      border-bottom: 1px solid var(--hair);
+    }
+
+    .post-item-link {
+      display: grid;
+      grid-template-columns: 9rem 1fr;
+      gap: 1.75rem;
+      align-items: baseline;
+      padding: 1.35rem 0.75rem;
+      margin: 0 -0.75rem;
+      border-radius: 6px;
+      text-decoration: none;
+      color: inherit;
+      border-bottom: none;
+      cursor: pointer;
+      transition: background-color .25s ease;
+    }
+    .post-item-link:hover {
+      background: color-mix(in srgb, var(--ink) 4%, transparent);
+    }
+
+    .post-item-link .desktop-time {
+      font-family: var(--sans);
+      font-size: 13px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--muted);
+      white-space: nowrap;
+      transition: color .2s ease;
+    }
+
+    .post-info {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      min-width: 0;
+    }
+
+    .post-title {
+      font-family: var(--serif);
+      font-size: clamp(20px, 2vw, 24px);
+      font-weight: 400;
+      line-height: 1.25;
+      letter-spacing: -0.015em;
+      color: var(--ink);
+      position: relative;
+      display: inline-block;
+      text-wrap: balance;
+      transition: opacity .2s ease;
+    }
+    .post-item-link:hover .post-title {
+      text-decoration: underline;
+      text-decoration-color: color-mix(in srgb, var(--ink) 35%, transparent);
+      text-underline-offset: 3px;
+    }
+
+    .post-summary {
+      font-family: var(--serif);
+      font-style: italic;
+      font-weight: 300;
+      font-size: 16px;
+      line-height: 1.55;
+      color: var(--ink-soft);
+      max-width: 60ch;
+    }
+
+    .author-date {
+      font-family: var(--sans);
+      font-size: 13.5px;
+      color: var(--muted);
+      line-height: 1.55;
+      letter-spacing: 0.005em;
+    }
+    .author-date strong {
+      font-weight: 500;
+      color: var(--ink-soft);
+    }
+    .author-date .sep {
+      display: inline-block;
+      margin: 0 0.55em;
+      color: var(--hair);
+    }
+
+    .mobile-time { display: none; }
+
+    @media (max-width: 720px) {
+      .post-item-link {
+        grid-template-columns: 1fr;
+        gap: 0.45rem;
+        padding: 1.1rem 0.5rem;
+        margin: 0 -0.5rem;
+      }
+      .desktop-time { display: none; }
+      .mobile-time {
+        display: block;
+        font-family: var(--sans);
+        font-size: 12.5px;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .post-title { font-size: 20px; }
+    }
+
+    /* ---------- Footer ---------- */
+    footer {
+      padding: 60px var(--pad) 80px;
+      text-align: center;
+      color: var(--muted);
+      font-family: var(--sans);
+      font-size: 13px;
+      letter-spacing: 0.04em;
+    }
+    footer .links { margin-top: 14px; }
+    footer .links a {
+      color: var(--ink-soft);
+      border: none;
+      margin: 0 10px;
+    }
+    footer .links a:hover { color: var(--ink); }
+  </style>
+</head>
+<body>
+
+  <!-- 3D rotating sphere (Three.js) — fixed at viewport center, behind all content.
+       Rendered lighter than the home page so foreground text stays comfortably legible. -->
+  <div class="sphere-wrap" aria-hidden="true">
+    <canvas id="sphere-canvas"></canvas>
+  </div>
+
+  <main class="layer">
+
+    <!-- ===== TOP NAV STRIP ===== -->
+    <div class="topbar">
+      <a class="brand" href="./index.html">SphereLab<em>.</em></a>
+      <nav>
+        <a href="./index.html">Home</a>
+        <a class="current" href="./blog.html">Blog</a>
+        <a href="https://github.com/Sphere-AI-Lab">GitHub</a>
+      </nav>
+    </div>
+
+    <!-- ===== PAGE HEAD ===== -->
+    <section class="page-head" id="top">
+      <div class="col">
+        <div class="eyebrow">SphereLab · Research blog</div>
+        <h1><em>Rotating</em> Sphere.</h1>
+        <p class="lede">
+          Research blogs on the principles that we are chasing to make scale tractable.
+        </p>
+      </div>
+    </section>
+
+    <div class="hairline"></div>
+
+    <!-- ===== POST LIST ===== -->
+    <section class="posts">
+      <div class="col-narrow">
+        <div class="post-group">
+          <ul>
+
+            <li>
+              <a class="post-item-link" href="https://spherelab.ai/orbit">
+                <time class="desktop-time" datetime="2026-05-24">May 24, 2026</time>
+                <div class="post-info">
+                  <div class="post-title">
+                    Orbit: A Ultra-efficient RL Post-training Pipeline for Trillion-Parameter LLMs
+                  </div>
+                  <div class="post-summary">
+                    A deployment-aligned, low-precision, PEFT-centric RL pipeline that stably and efficiently perform 1T-parameter LLM
+                    post-training on a single GPU node with 8×B200.
+                  </div>
+                  <div class="author-date">
+                    Zeju Qiu*, Le Chen*, Lixin Liu*, Tim Z. Xiao, Yao Feng, Yangyi Huang, Zhen Liu, Han Shi,
+                    Yandong Wen, Zhouliang Yu, Bernhard Schölkopf, Weiyang Liu
+                  </div>
+                  <time class="mobile-time" datetime="2026-05-24">May 24, 2026</time>
+                </div>
+              </a>
+            </li>
+
+            <li>
+              <a class="post-item-link" href="https://spherelab.ai/pion/">
+                <time class="desktop-time" datetime="2026-05-13">May 13, 2026</time>
+                <div class="post-info">
+                  <div class="post-title">
+                    Pion: A Stable Optimizer for LLMs
+                  </div>
+                  <div class="post-summary">
+                    A new geometric route to stable LLM training.
+                  </div>
+                  <div class="author-date">
+                    Kexuan Shi*, Hanxuan Li*, Zeju Qiu, Yandong Wen, Simon Buchholz, Weiyang Liu
+                  </div>
+                  <time class="mobile-time" datetime="2026-05-13">May 13, 2026</time>
+                </div>
+              </a>
+            </li>
+
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      SphereLab · Scalable Principles for Learning and Reasoning
+      <div class="links">
+        <a href="./index.html">Home</a>
+        <a href="https://github.com/Sphere-AI-Lab">GitHub</a>
+        <a href="https://huggingface.co/SphereLab">Hugging Face</a>
+        <a href="https://www.cse.cuhk.edu.hk/">CUHK CSE</a>
+      </div>
+    </footer>
+
+  </main>
+
+  <!-- Three.js for the rotating wireframe sphere (lighter variant) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+    (function () {
+      const canvas = document.getElementById('sphere-canvas');
+      if (!canvas || typeof THREE === 'undefined') return;
+
+      const renderer = new THREE.WebGLRenderer({
+        canvas,
+        alpha: true,
+        antialias: true,
+      });
+      renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+
+      const scene = new THREE.Scene();
+
+      const camera = new THREE.PerspectiveCamera(36, 1, 0.1, 100);
+      camera.position.set(0, 0, 3.4);
+
+      // ---- Build the wireframe sphere ----
+      // We keep the geometry from the home page but pull the line opacities
+      // down so the sphere reads as a faint background rather than a
+      // foreground element. The wrap element also sits at opacity 0.42.
+      const sphereGroup = new THREE.Group();
+      const RADIUS = 1;
+
+      const lineColor = new THREE.Color('#7a7163');
+      const lineMat = new THREE.LineBasicMaterial({
+        color: lineColor,
+        transparent: true,
+        opacity: 0.38,            // was 0.6 on the home page
+      });
+      const lineMatSoft = new THREE.LineBasicMaterial({
+        color: lineColor,
+        transparent: true,
+        opacity: 0.20,            // was 0.34 on the home page
+      });
+
+      // Meridians (great circles through the poles)
+      const MERIDIANS = 18;
+      const MERIDIAN_RES = 96;
+      for (let i = 0; i < MERIDIANS; i++) {
+        const phi = (i / MERIDIANS) * Math.PI;
+        const pts = [];
+        for (let j = 0; j <= MERIDIAN_RES; j++) {
+          const t = (j / MERIDIAN_RES) * Math.PI * 2;
+          pts.push(new THREE.Vector3(
+            RADIUS * Math.sin(t) * Math.cos(phi),
+            RADIUS * Math.cos(t),
+            RADIUS * Math.sin(t) * Math.sin(phi)
+          ));
+        }
+        const geom = new THREE.BufferGeometry().setFromPoints(pts);
+        sphereGroup.add(new THREE.Line(geom, lineMat));
+      }
+
+      // Parallels (latitude rings)
+      const PARALLELS = 12;
+      const PARALLEL_RES = 128;
+      for (let i = 1; i < PARALLELS; i++) {
+        const lat = (i / PARALLELS) * Math.PI;
+        const r = Math.sin(lat) * RADIUS;
+        const y = Math.cos(lat) * RADIUS;
+        const pts = [];
+        for (let j = 0; j <= PARALLEL_RES; j++) {
+          const a = (j / PARALLEL_RES) * Math.PI * 2;
+          pts.push(new THREE.Vector3(r * Math.cos(a), y, r * Math.sin(a)));
+        }
+        const geom = new THREE.BufferGeometry().setFromPoints(pts);
+        sphereGroup.add(new THREE.Line(geom, lineMatSoft));
+      }
+
+      // Faint surface point cloud (Fibonacci sphere) — also dimmer here.
+      const POINTS = 1100;
+      const positions = new Float32Array(POINTS * 3);
+      const golden = Math.PI * (3 - Math.sqrt(5));
+      for (let i = 0; i < POINTS; i++) {
+        const y = 1 - (i / (POINTS - 1)) * 2;
+        const r = Math.sqrt(1 - y * y);
+        const theta = golden * i;
+        positions[i * 3 + 0] = Math.cos(theta) * r * RADIUS;
+        positions[i * 3 + 1] = y * RADIUS;
+        positions[i * 3 + 2] = Math.sin(theta) * r * RADIUS;
+      }
+      const ptGeom = new THREE.BufferGeometry();
+      ptGeom.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+      const ptMat = new THREE.PointsMaterial({
+        color: lineColor,
+        size: 0.011,
+        sizeAttenuation: true,
+        transparent: true,
+        opacity: 0.55,            // was 0.85 on the home page
+      });
+      sphereGroup.add(new THREE.Points(ptGeom, ptMat));
+
+      // Slight tilt so we see both hemispheres
+      sphereGroup.rotation.x = 0.32;
+      sphereGroup.rotation.z = -0.05;
+
+      scene.add(sphereGroup);
+
+      // ---- Sizing ----
+      function resize() {
+        const rect = canvas.getBoundingClientRect();
+        const size = Math.min(rect.width, rect.height) || 600;
+        renderer.setSize(size, size, false);
+        camera.aspect = 1;
+        camera.updateProjectionMatrix();
+      }
+      resize();
+      window.addEventListener('resize', resize);
+
+      // ---- Animate ----
+      const reduceMotion = window.matchMedia &&
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      const SPEED_Y = reduceMotion ? 0 : 0.0018;
+      const SPEED_X = reduceMotion ? 0 : 0.00035;
+
+      function tick() {
+        sphereGroup.rotation.y += SPEED_Y;
+        sphereGroup.rotation.x += SPEED_X;
+        renderer.render(scene, camera);
+        requestAnimationFrame(tick);
+      }
+      tick();
+
+      // ---- Scroll fade (very mild — sphere is already light) ----
+      const wrap = document.querySelector('.sphere-wrap');
+      const BASE_OPACITY = 0.42;
+      const MIN_OPACITY  = 0.22;
+      const FADE_START = 0.0;
+      const FADE_END   = 0.35;
+
+      let ticking = false;
+      function applyFade() {
+        const vh = window.innerHeight || 800;
+        const raw = (window.scrollY / vh - FADE_START) / (FADE_END - FADE_START);
+        const t   = Math.min(Math.max(raw, 0), 1);
+        const eased = t * t * (3 - 2 * t);
+        const op = BASE_OPACITY - eased * (BASE_OPACITY - MIN_OPACITY);
+        wrap.style.opacity = op.toFixed(3);
+        ticking = false;
+      }
+      function onScroll() {
+        if (!ticking) {
+          window.requestAnimationFrame(applyFade);
+          ticking = true;
+        }
+      }
+      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('resize', onScroll, { passive: true });
+      applyFade();
+    })();
+  </script>
+</body>
+</html>
